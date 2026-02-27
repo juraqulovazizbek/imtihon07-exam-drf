@@ -86,11 +86,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        env.db()
-    }
+    "default": env.db()
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -119,7 +116,95 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
+from pathlib import Path
+from urllib.parse import urlparse
 
+from decouple import config, Csv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = config("SECRET_KEY")
+DEBUG = config("DEBUG", cast=bool, default=False)
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv(), default=[])
+# --- DB (DATABASE_URL ni qo'lda parse qilamiz) ---
+db_url = urlparse(config("DATABASE_URL"))
+
+# postgres://postgres:1234@localhost:5432/clinic_db
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": db_url.path.lstrip("/"),
+        "USER": db_url.username,
+        "PASSWORD": db_url.password,
+        "HOST": db_url.hostname,
+        "PORT": db_url.port or 5432,
+    }
+}
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    # Third party
+    "rest_framework",
+    "drf_spectacular",
+
+    # Local
+    "apps.users.apps.UsersConfig",
+    "apps.doctors.apps.DoctorsConfig",
+    "apps.appointments.apps.AppointmentsConfig",
+]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "config.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    }
+]
+
+WSGI_APPLICATION = "config.wsgi.application"
+
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = "static/"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "users.User"
 USE_TZ = True
 
 
@@ -132,3 +217,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = "users.User"
