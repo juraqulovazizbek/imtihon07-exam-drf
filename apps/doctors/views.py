@@ -1,3 +1,13 @@
-from django.shortcuts import render
+from rest_framework.viewsets import ModelViewSet
+from .models import DoctorProfile, TimeSlot
+from .serializers import DoctorProfileSerializer, TimeSlotSerializer
 
-# Create your views here.
+
+class DoctorProfileViewSet(ModelViewSet):
+    queryset = DoctorProfile.objects.all()
+    serializer_class = DoctorProfileSerializer
+
+
+class TimeSlotViewSet(ModelViewSet):
+    queryset = TimeSlot.objects.all()
+    serializer_class = TimeSlotSerializer
